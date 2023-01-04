@@ -37,7 +37,7 @@ namespace AA_Tree
 
         public void Insert(T element)
         {
-            this.root = this.Insert(root, element);
+            this.root = this.Insert(this.root, element);
         }
 
         private Node Insert(Node node, T value)
@@ -58,7 +58,7 @@ namespace AA_Tree
             {
                 node = this.Skew(node);
             }
-            if (node.Left != null && node.Right != null && node.Left.Level == node.Level && node.Right.Level == node.Level)
+            if (node.Right != null && node.Right.Right != null && node.Level == node.Right.Right.Level)
             {
                 node = this.Split(node);
             }
@@ -68,17 +68,18 @@ namespace AA_Tree
 
         private Node Split(Node node)
         {
-            node.Level += 1;
-            return node;
+            Node current = node.Right;
+            node.Right = current.Left;
+            current.Left = node;
+            current.Level++;
+            return current;
         }
 
         private Node Skew(Node node)
         {
             var current = node.Left;
-            current.Left = node.Left;
-            node.Left = current;
-            current.Level = node.Level;
-            
+            node.Left = current.Right;
+            current.Right = node;            
             return current;
         }
 
