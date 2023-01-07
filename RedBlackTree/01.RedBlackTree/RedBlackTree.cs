@@ -64,7 +64,27 @@
 
             return new RedBlackTree<T>(current);
         }
+        public bool Contains(T element)
+        {
+            Node current = this.root;
+            while (current != null)
+            {
+                if (AreEqual(element, current.Value))
+                {
+                    return true;
+                }
+                if (IsLesser(element, current.Value))
+                {
+                    current = current.Left;
+                }
+                else
+                {
+                    current = current.Right;
+                }
+            }
 
+            return false;
+        }
         private Node FindNode(T element)
         {
             Node current = this.root;
