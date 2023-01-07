@@ -44,12 +44,68 @@
 
         public void Delete(T element)
         {
-            throw new InvalidOperationException();
+            this.Root = Delete(this.Root, element);
+        }
+
+        private Node Delete(Node node, T element)
+        {
+            if (node == null)
+            {
+                return null;
+            }
+            if (IsLesser(element, node.Value))
+            {
+                node.Left = this.Delete(node.Left, element);
+            }
+            else if (IsBigger(element, node.Value))
+            {
+                node.Right = this.Delete(node.Right, element);
+            }
+            else
+            {
+                if (node.Left == null && node.Right == null)
+                {
+                    return null;
+                }
+                else if (node.Left == null)
+                {
+                    node = node.Right;
+                }
+                else if (node.Right == null)
+                {
+                    node = node.Left;
+                }
+                else
+                {
+                    Node temp = FindSmallestNode(node.Right);
+                    node.Value = temp.Value;
+                    node.Right = this.Delete(node.Right, temp.Value);
+                }
+            }
+            node = this.Balance(node);
+            node.Height = Math.Max(Height(node.Left), Height(node.Right)) + 1; ;
+            return node;
+        }
+
+        private Node FindSmallestNode(Node node)
+        {
+            if (node.Left == null)
+            {
+                return node;
+            }
+            node = FindSmallestNode(node.Left);
+            return node;
+
         }
 
         public void DeleteMin()
         {
-            throw new InvalidOperationException();
+            if (this.Root == null)
+            {
+                return;
+            }
+            var node = FindSmallestNode(this.Root);
+            this.Delete(node.Value);
         }
 
         public void Insert(T element)
@@ -171,6 +227,10 @@
         private bool IsLesser(T element, T value)
         {
             return element.CompareTo(value) < 0;
+        }
+        private bool IsBigger(T element, T value)
+        {
+            return element.CompareTo(value) > 0;
         }
     }
 }
