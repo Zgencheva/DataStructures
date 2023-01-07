@@ -87,17 +87,6 @@
             return node;
         }
 
-        private Node FindSmallestNode(Node node)
-        {
-            if (node.Left == null)
-            {
-                return node;
-            }
-            node = FindSmallestNode(node.Left);
-            return node;
-
-        }
-
         public void DeleteMin()
         {
             if (this.Root == null)
@@ -105,6 +94,16 @@
                 return;
             }
             var node = FindSmallestNode(this.Root);
+            this.Delete(node.Value);
+        }
+
+        public void DeleteMax()
+        {
+            if (this.Root == null)
+            {
+                return;
+            }
+            Node node = FindBiggestNode(this.Root);
             this.Delete(node.Value);
         }
 
@@ -195,7 +194,25 @@
         {
             return Height(node.Left) - Height(node.Right);
         }
+        private Node FindSmallestNode(Node node)
+        {
+            if (node.Left == null)
+            {
+                return node;
+            }
+            node = FindSmallestNode(node.Left);
+            return node;
 
+        }
+        private Node FindBiggestNode(Node node)
+        {
+            if (node.Right == null)
+            {
+                return node;
+            }
+            node = FindSmallestNode(node.Right);
+            return node;
+        }
         private int Height(Node node)
         {
             if (node == null)
