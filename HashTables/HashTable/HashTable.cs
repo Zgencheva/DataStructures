@@ -55,7 +55,7 @@
 
         private void GrowIfNeeded()
         {
-            if ((float)(this.Count +1)/ this.Capacity > FillFactor)
+            if ((float)(this.Count +1)/ this.Capacity >= FillFactor)
             {
                 this.Grow();
             }
@@ -64,15 +64,10 @@
         private void Grow()
         {
             var newHashTable = new HashTable<TKey, TValue>(this.Capacity * 2);
-            foreach (var elements in this.slots)
+  
+            foreach (var kvp in this)
             {
-                if (elements != null)
-                {
-                    foreach (var kvp in elements)
-                    {
-                        newHashTable.Add(kvp.Key, kvp.Value);
-                    }
-                }
+                newHashTable.Add(kvp.Key, kvp.Value);
             }
             this.Count = newHashTable.Count;
             this.slots = newHashTable.slots;
@@ -97,7 +92,7 @@
             var newKvp = new KeyValue<TKey, TValue>(key, value);
             this.slots[slotNumber].AddLast(newKvp);
             this.Count++;
-            return true;
+            return false;
         }
 
         public TValue Get(TKey key)
