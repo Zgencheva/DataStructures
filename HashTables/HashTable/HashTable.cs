@@ -7,41 +7,119 @@
     
     public class HashTable<TKey, TValue> : IEnumerable<KeyValue<TKey, TValue>>
     {
+        public LinkedList<KeyValue<TKey, TValue>>[] slots { get; set; }
         public int Count { get; private set; }
 
-        public int Capacity => throw new NotImplementedException();
+        public int Capacity => this.slots.Length;
 
-        public HashTable() { throw new NotImplementedException(); }
+        public const float FillFactor = 0.75f;
 
-        public HashTable(int capacity)
+        public const int DefaultCapacity = 16;
+
+        public HashTable() 
         {
-            throw new NotImplementedException();
+            this.slots = new LinkedList<KeyValue<TKey, TValue>>[DefaultCapacity];
+            this.Count = 0;
+        }
+
+        public HashTable(int capacity = DefaultCapacity)
+        {
+            this.slots = new LinkedList<KeyValue<TKey, TValue>>[capacity];
+            this.Count = 0;
         }
 
         public void Add(TKey key, TValue value)
         {
-            throw new NotImplementedException();
+            GrowIfNeeded();
+            int slotNumber = this.FindSlotNumber(key);
+            if (this.slots[slotNumber] == null)
+            {
+                this.slots[slotNumber] = new LinkedList<KeyValue<TKey, TValue>>();
+            }
+            foreach (var kvp in this.slots[slotNumber])
+            {
+                if (kvp.Key.Equals(key))
+                {
+                    throw new ArgumentException("Key already exists: " + key);
+                }
+            }
+            var newKvp = new KeyValue<TKey, TValue>(key, value);
+            this.slots[slotNumber].AddLast(newKvp);
+            this.Count++;
+        }
+
+        private int FindSlotNumber(TKey key)
+        {
+            return Math.Abs(key.GetHashCode()) % this.Capacity;
+        }
+
+        private void GrowIfNeeded()
+        {
+            if ((float)(this.Count +1)/ this.Capacity > FillFactor)
+            {
+                this.Grow();
+            }
+        }
+
+        private void Grow()
+        {
+            var newHashTable = new HashTable<TKey, TValue>(this.Capacity * 2);
+            foreach (var elements in this.slots)
+            {
+                if (elements != null)
+                {
+                    foreach (var kvp in elements)
+                    {
+                        newHashTable.Add(kvp.Key, kvp.Value);
+                    }
+                }
+            }
+            this.Count = newHashTable.Count;
+            this.slots = newHashTable.slots;
         }
 
         public bool AddOrReplace(TKey key, TValue value)
         {
-            throw new NotImplementedException();
+            GrowIfNeeded();
+            int slotNumber = this.FindSlotNumber(key);
+            if (this.slots[slotNumber] == null)
+            {
+                this.slots[slotNumber] = new LinkedList<KeyValue<TKey, TValue>>();
+            }
+            foreach (var kvp in this.slots[slotNumber])
+            {
+                if (kvp.Key.Equals(key))
+                {
+                    kvp.Value = value;
+                    return true;
+                }
+            }
+            var newKvp = new KeyValue<TKey, TValue>(key, value);
+            this.slots[slotNumber].AddLast(newKvp);
+            this.Count++;
+            return true;
         }
 
         public TValue Get(TKey key)
         {
-            throw new NotImplementedException();
+            var element = this.Find(key);
+            if (element == null)
+            {
+                throw new KeyNotFoundException();
+            }
+            return element.Value;
+
         }
 
         public TValue this[TKey key]
         {
             get
             {
-                throw new NotImplementedException();
+                return this.Get(key);
             }
             set
             {
-                throw new NotImplementedException();
+                this.AddOrReplace(key, value);  
             }
         }
 
@@ -55,45 +133,85 @@
                 return true;
             }
 
-            value = default;
+            value = default(TValue);
             return false;
         }
 
         public KeyValue<TKey, TValue> Find(TKey key)
         {
-            throw new NotImplementedException();
+            KeyValue<TKey, TValue> result = null;
+            var slotNumber = this.FindSlotNumber(key);
+            if (this.slots[slotNumber] != null)
+            {
+                foreach (var kvp in this.slots[slotNumber])
+                {
+                    if (kvp.Key.Equals(key))
+                    {
+                        result = kvp;
+                    }
+                }
+            }
+            return result;
         }
 
         public bool ContainsKey(TKey key)
         {
-            throw new NotImplementedException();
+            var element = this.Find(key);
+            return element != null;
         }
 
         public bool Remove(TKey key)
         {
-            throw new NotImplementedException();
+            int slotNumber = this.FindSlotNumber(key);
+            var elements = this.slots[slotNumber];
+            if (elements == null)
+            {
+                return false;
+            }
+            var currentElement = elements.First;
+            while (currentElement != null)
+            {
+                if (currentElement.Value.Key.Equals(key))
+                {
+                    elements.Remove(currentElement);
+                    this.Count--;
+                    return true;
+                }
+                currentElement = currentElement.Next;
+            }
+            return false;
         }
 
         public void Clear()
         {
-            throw new NotImplementedException();
+            this.slots = new LinkedList<KeyValue<TKey, TValue>>[DefaultCapacity];
+            this.Count = 0;
         }
 
-        public IEnumerable<TKey> Keys => throw new NotImplementedException();
+        public IEnumerable<TKey> Keys => this.Select(x => x.Key);
 
         public IEnumerable<TValue> Values
         {
             get
             {
-                throw new NotImplementedException();
+                return this.Select(x => x.Value);
             }
         }
 
         public IEnumerator<KeyValue<TKey, TValue>> GetEnumerator()
         {
-            throw new NotImplementedException();
+            foreach (var elements in this.slots)
+            {
+                if (elements != null)
+                {
+                    foreach (var item in elements)
+                    {
+                        yield return item;
+                    }
+                }
+            }
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
     }
 }
