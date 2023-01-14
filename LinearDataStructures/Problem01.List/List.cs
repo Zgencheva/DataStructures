@@ -23,24 +23,17 @@
 
         private void SetValueToIndex(int index, T value)
         {
-            if (index >= this.Count)
-            {
-                throw new IndexOutOfRangeException();
-            }
+            this.ValidateIndex(index);
             this.items[index] = value;
         }
 
         private T Get(int index)
         {
-            if (index >= this.Count)
-            {
-                throw new IndexOutOfRangeException();
-            }
+            this.ValidateIndex(index);
             return this.items[index];
         }
 
         public int Count { get; private set; }
-
 
         public void Add(T item)
         {
@@ -86,21 +79,18 @@
 
         public void Insert(int index, T item)
         {
-            if (index >= this.Count)
-            {
-                throw new IndexOutOfRangeException();
-            }
-          
+            this.ValidateIndex(index);
+
             this.ResizeIfNeeded();
             var newArray = new T[this.items.Length];
-                
+
             var first = this.items.Take(index).ToArray();
             var second = this.items.Skip(index).Take(this.Count - first.Length).ToArray();
             first.CopyTo(newArray, 0);
             newArray[index] = item;
             second.CopyTo(newArray, first.Length + 1);
             this.items = newArray;
-             this.Count++;
+            this.Count++;
         }
 
         public bool Remove(T item)
@@ -123,10 +113,7 @@
 
         public void RemoveAt(int index)
         {
-            if (index < 0 || index >= this.Count)
-            {
-                throw new IndexOutOfRangeException();
-            }
+            this.ValidateIndex(index);
             var newArray = new T[this.items.Length];
             var first = this.items.Take(index).ToArray();
             var second = this.items.Skip(index + 1).Take(this.Count - first.Length).ToArray();
@@ -143,5 +130,13 @@
             }
         }
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+
+        private void ValidateIndex(int index)
+        {
+            if (index < 0 || index >= this.Count)
+            {
+                throw new IndexOutOfRangeException();
+            }
+        }
     }
 }
