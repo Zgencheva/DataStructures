@@ -22,9 +22,26 @@
         private Node tail { get; set; }
         public void AddFirst(T item)
         {
-            var newNode = new Node(item);
-            newNode.Next = this.head;
-            this.head = newNode;
+            if (this.head == null)
+            {
+                this.head = new Node(item);
+            }
+            else if (this.tail == null)
+            {
+                this.tail = this.head;
+                this.head = new Node(item);
+                this.tail.Previous = this.head;
+
+                this.head.Next = this.tail;
+    
+            }
+            else
+            {
+                var newNode = new Node(item);
+                newNode.Next = this.head;
+                this.head.Previous = newNode;
+                this.head = newNode;
+            }
             this.Count++;
         }
 
@@ -113,8 +130,8 @@
             else
             {
                 var result = this.tail.Value;
-                this.tail = this.tail.Previous;
-                this.tail.Next = null;
+                this.tail.Previous = this.tail;
+                this.tail = null;
                 this.Count--;
                 return result;
             }
