@@ -28,7 +28,34 @@
 
         public void AddChild(T parentKey, Tree<T> child)
         {
-            throw new NotImplementedException();
+            var parrentNode = this.FindNode(parentKey);
+            if (parrentNode == null)
+            {
+                throw new ArgumentNullException();
+            }
+            parrentNode.Children.Add(child);
+            child.Parent = parrentNode;
+
+        }
+
+        private Tree<T> FindNode(T parentKey)
+        {
+            var queue = new Queue<Tree<T>>();
+            var currentNode = this;
+            queue.Enqueue(currentNode);
+            while (queue.Count > 0)
+            {
+                currentNode = queue.Dequeue();
+                if (currentNode.Value.Equals(parentKey))
+                {
+                    return currentNode;
+                }
+                foreach (var child in currentNode.Children)
+                {
+                    queue.Enqueue(child);
+                }
+            }
+            return null;
         }
 
         public IEnumerable<T> OrderBfs()
@@ -82,12 +109,65 @@
         }
         public void RemoveNode(T nodeKey)
         {
-            throw new NotImplementedException();
+            var nodeToRemove = this.FindNode(nodeKey);
+            if (nodeToRemove == null)
+            {
+                throw new ArgumentNullException();
+            }
+            if (nodeToRemove.Value.Equals(this.Value))
+            {
+                throw new ArgumentException();
+            }
+            var parrentNode = nodeToRemove.Parent;
+            parrentNode.Children.Remove(nodeToRemove);
+            nodeToRemove.Parent = null;
+            
         }
 
         public void Swap(T firstKey, T secondKey)
         {
-            throw new NotImplementedException();
+            var firstNode = this.FindNode(firstKey);
+            var secondNode = this.FindNode(secondKey);
+            if (firstNode == null || secondNode == null)
+            {
+                throw new ArgumentNullException();
+            }
+            if (this.Value.Equals(firstKey) || this.Value.Equals(secondKey))
+            {
+                throw new ArgumentException();
+            } 
+            if (firstNode.Children.Contains(secondNode))
+            {
+                var indexFirst = firstNode.Parent.Children.IndexOf(firstNode);
+                firstNode.Parent.Children.Remove(firstNode);
+                secondNode.Parent = firstNode.Parent;
+                firstNode.Parent.Children.Insert(indexFirst, secondNode);
+
+            }
+            else if (secondNode.Children.Contains(firstNode))
+            {
+                var indexSecond = secondNode.Parent.Children.IndexOf(secondNode);
+                secondNode.Parent.Children.Remove(secondNode);
+                firstNode.Parent = secondNode.Parent;
+                secondNode.Parent.Children.Insert(indexSecond, firstNode);
+
+            }
+            else
+            {
+                var indexFirstNode = firstNode.Parent.Children.IndexOf(firstNode);
+                var indexSecondNode = secondNode.Parent.Children.IndexOf(secondNode);
+                var firstParent = firstNode.Parent;
+                var secondParent = secondNode.Parent;
+                firstNode.Parent.Children.Remove(firstNode);
+                secondNode.Parent.Children.Remove(secondNode);
+
+                firstNode.Parent = secondParent;
+                secondNode.Parent = firstParent;
+
+                firstParent.Children.Insert(indexFirstNode, secondNode);
+                secondParent.Children.Insert(indexSecondNode, firstNode);
+            }
+
         }
     }
 }
