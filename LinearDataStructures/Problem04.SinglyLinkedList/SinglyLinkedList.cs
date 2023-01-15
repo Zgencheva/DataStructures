@@ -18,11 +18,6 @@
             throw new NotImplementedException();
         }
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
         public T GetFirst()
         {
             throw new NotImplementedException();
@@ -42,7 +37,10 @@
         {
             throw new NotImplementedException();
         }
-
+        public IEnumerator<T> GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
         IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();
