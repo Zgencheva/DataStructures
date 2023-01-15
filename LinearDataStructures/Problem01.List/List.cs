@@ -100,14 +100,7 @@
                 return false;
             }
             var index = this.IndexOf(item);
-            var newArray = new T[this.items.Length];
-
-            var first = this.items.Take(index).ToArray();
-            var second = this.items.Skip(index + 1).Take(this.Count - first.Length).ToArray();
-            first.CopyTo(newArray, 0);
-            second.CopyTo(newArray, first.Length);
-            this.items = newArray;
-            this.Count--;
+            this.RemoveAt(index);
             return true;
         }
 
