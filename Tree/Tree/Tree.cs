@@ -119,43 +119,24 @@
                 throw new ArgumentException();
             }
             var parrentNode = nodeToRemove.Parent;
-            parrentNode.Children.Remove(nodeToRemove);
-            nodeToRemove.Parent = null;
-            
+            parrentNode.Children.Remove(nodeToRemove);            
         }
 
         public void Swap(T firstKey, T secondKey)
         {
             var firstNode = this.FindNode(firstKey);
             var secondNode = this.FindNode(secondKey);
-            if (firstNode == null || secondNode == null)
+            if (firstNode is null || secondNode is null)
             {
                 throw new ArgumentNullException();
             }
             if (this.Value.Equals(firstKey) || this.Value.Equals(secondKey))
             {
                 throw new ArgumentException();
-            } 
-            if (firstNode.Children.Contains(secondNode))
-            {
-                var indexFirst = firstNode.Parent.Children.IndexOf(firstNode);
-                firstNode.Parent.Children.Remove(firstNode);
-                secondNode.Parent = firstNode.Parent;
-                firstNode.Parent.Children.Insert(indexFirst, secondNode);
-
             }
-            else if (secondNode.Children.Contains(firstNode))
-            {
-                var indexSecond = secondNode.Parent.Children.IndexOf(secondNode);
-                secondNode.Parent.Children.Remove(secondNode);
-                firstNode.Parent = secondNode.Parent;
-                secondNode.Parent.Children.Insert(indexSecond, firstNode);
-
-            }
-            else
-            {
                 var indexFirstNode = firstNode.Parent.Children.IndexOf(firstNode);
                 var indexSecondNode = secondNode.Parent.Children.IndexOf(secondNode);
+
                 var firstParent = firstNode.Parent;
                 var secondParent = secondNode.Parent;
                 firstNode.Parent.Children.Remove(firstNode);
@@ -166,7 +147,6 @@
 
                 firstParent.Children.Insert(indexFirstNode, secondNode);
                 secondParent.Children.Insert(indexSecondNode, firstNode);
-            }
 
         }
     }
