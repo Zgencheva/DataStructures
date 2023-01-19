@@ -57,11 +57,7 @@ namespace Exam.Discord
             {
                 throw new ArgumentException();
             }
-            var message = this.Messages[messageId];
             this.Messages[messageId].Reactions.Add(reaction);
-            this.Channels[message.Channel]
-                .FirstOrDefault(x => x.Id == messageId)
-                .Reactions.Add(reaction);
         }
 
         public IEnumerable<Message> GetChannelMessages(string channel)
@@ -75,8 +71,8 @@ namespace Exam.Discord
         public IEnumerable<Message> GetMessagesByReactions(List<string> reactions)
         {
             return this.Messages
-                .Select(x=> x.Value)
-                .Where(x => x.Reactions.All(r => reactions.Contains(r)))
+                .Values
+                .Where(x => reactions.All(r=> x.Reactions.Contains(r)))
                 .OrderByDescending(x => x.Reactions.Count)
                 .ThenBy(x => x.Timestamp);
         }
@@ -92,14 +88,14 @@ namespace Exam.Discord
         }
         public IEnumerable<Message> GetTop3MostReactedMessages()
         {
-           return this.Messages.Select(x => x.Value)
+           return this.Messages.Values
                 .OrderByDescending(x => x.Reactions.Count)
                 .Take(3);
                 
         }
         public IEnumerable<Message> GetAllMessagesOrderedByCountOfReactionsThenByTimestampThenByLengthOfContent()
         {
-            return this.Messages.Select(x => x.Value)
+            return this.Messages.Values
                 .OrderByDescending(x => x.Reactions.Count)
                 .ThenBy(x => x.Timestamp)
                 .ThenBy(x => x.Content.Length)

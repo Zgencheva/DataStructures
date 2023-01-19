@@ -10,12 +10,8 @@ namespace Exam.MoovIt
         public MoovIt()
         {
             this.Routes = new Dictionary<string, Route>();
-            this.RoutesByStartAndEndPoint = 
-                new Dictionary<(string, string), SortedSet<Route>>();
         }
         public Dictionary<string, Route> Routes { get; set; }
-
-        public Dictionary<(string start, string end), SortedSet<Route>> RoutesByStartAndEndPoint { get; set; }
 
         public int Count => this.Routes.Count;
 
@@ -25,34 +21,23 @@ namespace Exam.MoovIt
             {
                 throw new ArgumentException();
             }
-            this.Routes[route.Id] = route;
-            var startEndPoint = (route.LocationPoints[0], route.LocationPoints[route.LocationPoints.Count - 1]);
-            if (!this.RoutesByStartAndEndPoint.ContainsKey(startEndPoint))
-            {
-                this.RoutesByStartAndEndPoint.Add(startEndPoint, new SortedSet<Route>());
-            }
-            this.RoutesByStartAndEndPoint[startEndPoint].Add(route);
+            this.Routes[route.Id] = route;         
         }
 
-        public void ChooseRoute(string routeId)
+        public void RemoveRoute(string routeId)
         {
             if (!this.Routes.ContainsKey(routeId))
             {
                 throw new ArgumentException();
             }
-            this.Routes[routeId].Popularity += 1;
-            var route = this.Routes[routeId];
-            var kvp = (route.LocationPoints[0], route.LocationPoints[route.LocationPoints.Count - 1]);
-            this.RoutesByStartAndEndPoint[kvp]
-                .FirstOrDefault(x => x.Id == routeId)
-                .Popularity += 1;
+            this.Routes.Remove(routeId);
         }
 
         public bool Contains(Route route)
-         => this.RoutesByStartAndEndPoint
-            .ContainsKey((route.LocationPoints[0], route.LocationPoints[route.LocationPoints.Count - 1]));
+       => this.Routes.Values
+            .Any(x=> x.LocationPoints[0] == route.LocationPoints[0]
+            && x.LocationPoints[x.LocationPoints.Count - 1] == route.LocationPoints[route.LocationPoints.Count-1]);
 
-        
         public Route GetRoute(string routeId)
         {
             if (!this.Routes.ContainsKey(routeId))
@@ -62,21 +47,21 @@ namespace Exam.MoovIt
             return this.Routes[routeId];
         }
 
-        public IEnumerable<Route> GetFavoriteRoutes(string destinationPoint)
-        {
-            return this.Routes.Values
-                .Where(x => x.LocationPoints[x.LocationPoints.Count - 1] == destinationPoint)
-                .OrderByDescending(x => x.Popularity);
-        }
-
-        
-        public void RemoveRoute(string routeId)
+        public void ChooseRoute(string routeId)
         {
             if (!this.Routes.ContainsKey(routeId))
             {
                 throw new ArgumentException();
             }
-            this.Routes.Remove(routeId);
+            this.Routes[routeId].Popularity += 1;
+        }
+
+        public IEnumerable<Route> GetFavoriteRoutes(string destinationPoint)
+        {
+            return this.Routes.Values
+                .Where(x => x.IsFavorite && x.LocationPoints.IndexOf(destinationPoint) >= 1)
+                .OrderBy(x => x.Distance)
+                .ThenByDescending(x => x.Popularity);
         }
 
         public IEnumerable<Route> GetTop5RoutesByPopularityThenByDistanceThenByCountOfLocationPoints()
@@ -90,6 +75,18 @@ namespace Exam.MoovIt
 
 
         public IEnumerable<Route> SearchRoutes(string startPoint, string endPoint)
-        => this.RoutesByStartAndEndPoint[(startPoint, endPoint)];
+        {
+            var chosenRoutes = this.Routes
+                .Select(kvp => kvp.Value)
+                .Where(r =>
+                         r.LocationPoints.Contains(startPoint) &&
+                         r.LocationPoints.Contains(endPoint)
+                         && r.LocationPoints.IndexOf(startPoint) < r.LocationPoints.IndexOf(endPoint))
+               .OrderBy(r => r.IsFavorite)
+               .ThenBy(x => x.LocationPoints.IndexOf(endPoint) - x.LocationPoints.IndexOf(startPoint))
+               .ThenByDescending(r => r.Popularity);
+
+            return chosenRoutes;
+        }
     }
 }
