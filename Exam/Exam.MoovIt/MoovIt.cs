@@ -9,64 +9,67 @@ namespace Exam.MoovIt
     {
         public MoovIt()
         {
-            this.Routes = new Dictionary<string, Route>();
+            this.RoutesById = new Dictionary<string, Route>();
+            this.Routes = new HashSet<Route>();
         }
-        public Dictionary<string, Route> Routes { get; set; }
+        private Dictionary<string, Route> RoutesById { get; set; }
+        private HashSet<Route> Routes { get; set; }
 
         public int Count => this.Routes.Count;
 
         public void AddRoute(Route route)
         {
-            if (this.Routes.ContainsKey(route.Id))
+            if (this.Routes.Contains(route))
             {
                 throw new ArgumentException();
             }
-            this.Routes[route.Id] = route;         
+            this.Routes.Add(route);
+            this.RoutesById.Add(route.Id, route);
         }
 
         public void RemoveRoute(string routeId)
         {
-            if (!this.Routes.ContainsKey(routeId))
+            if (!this.RoutesById.ContainsKey(routeId))
             {
                 throw new ArgumentException();
             }
-            this.Routes.Remove(routeId);
+            var route = this.RoutesById[routeId];
+            this.Routes.Remove(route);
+            this.RoutesById.Remove(routeId);
         }
 
         public bool Contains(Route route)
-       => this.Routes.Values
-            .Any(x=> x.LocationPoints[0] == route.LocationPoints[0]
-            && x.LocationPoints[x.LocationPoints.Count - 1] == route.LocationPoints[route.LocationPoints.Count-1]);
+       => this.Routes.Contains(route);
 
         public Route GetRoute(string routeId)
         {
-            if (!this.Routes.ContainsKey(routeId))
+            if (!this.RoutesById.ContainsKey(routeId))
             {
                 throw new ArgumentException();
             }
-            return this.Routes[routeId];
+           
+            return this.RoutesById[routeId];
         }
 
         public void ChooseRoute(string routeId)
         {
-            if (!this.Routes.ContainsKey(routeId))
+            if (!this.RoutesById.ContainsKey(routeId))
             {
                 throw new ArgumentException();
             }
-            this.Routes[routeId].Popularity += 1;
+            this.RoutesById[routeId].Popularity += 1;
         }
 
         public IEnumerable<Route> GetFavoriteRoutes(string destinationPoint)
         {
-            return this.Routes.Values
+            return this.Routes
                 .Where(x => x.IsFavorite && x.LocationPoints.IndexOf(destinationPoint) >= 1)
                 .OrderBy(x => x.Distance)
                 .ThenByDescending(x => x.Popularity);
         }
 
         public IEnumerable<Route> GetTop5RoutesByPopularityThenByDistanceThenByCountOfLocationPoints()
-=>          this.Routes
-                .Values
+        =>      this.Routes
                 .OrderByDescending(x => x.Popularity)
                 .ThenBy(x => x.Distance)
                 .ThenBy(x=> x.LocationPoints.Count)
@@ -77,7 +80,6 @@ namespace Exam.MoovIt
         public IEnumerable<Route> SearchRoutes(string startPoint, string endPoint)
         {
             var chosenRoutes = this.Routes
-                .Select(kvp => kvp.Value)
                 .Where(r =>
                          r.LocationPoints.Contains(startPoint) &&
                          r.LocationPoints.Contains(endPoint)
